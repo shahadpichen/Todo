@@ -7,21 +7,82 @@ import { Icons } from "./icons";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import { serverURL } from "@/lib/serverConfig";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
   auth: boolean;
 }
-
 export function UserAuthForm({ className, auth, ...props }: UserAuthFormProps) {
+  const router = useRouter();
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   async function onSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
+
+    const formData = new FormData(event.target as HTMLFormElement);
+
+    const name = formData.get("name");
+    const email = formData.get("email");
+    const password = formData.get("password");
+
+    console.log(email, password);
+
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
+    try {
+      let response;
+      let token;
+      if (auth) {
+        response = await axios.post(
+          `${serverURL}/users`,
+          {
+            user_name: name,
+            email: email,
+            password: password,
+          },
+          {
+            withCredentials: true,
+          }
+        );
+        token = response.data;
+      } else {
+        response = await axios.post(
+          `${serverURL}/users/login`,
+          {
+            email: email,
+            password: password,
+          },
+          {
+            withCredentials: true,
+          }
+        );
+        token = response.data.accessToken;
+      }
+
+      localStorage.setItem("token", token);
+      setTimeout(() => {
+        setIsLoading(false);
+        if (token) {
+          router.push("/todo");
+        }
+      }, 1000);
+    } catch (error) {
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 1000);
+
+      if (axios.isAxiosError(error)) {
+        console.error("AxiosError:", error.message);
+        console.error("Error code:", error.code);
+        console.error("Error response:", error.response);
+      } else {
+        console.error("Unexpected error:", error);
+      }
+    } finally {
+      console.log("Login completed");
+    }
   }
 
   return (
@@ -36,6 +97,7 @@ export function UserAuthForm({ className, auth, ...props }: UserAuthFormProps) {
               <Input
                 id="name"
                 placeholder="Shahad"
+                name="name"
                 type="name"
                 disabled={isLoading}
               />
@@ -52,6 +114,7 @@ export function UserAuthForm({ className, auth, ...props }: UserAuthFormProps) {
               id="email"
               placeholder="name@example.com"
               type="email"
+              name="email"
               autoCapitalize="none"
               autoComplete="email"
               autoCorrect="off"
@@ -66,6 +129,7 @@ export function UserAuthForm({ className, auth, ...props }: UserAuthFormProps) {
               id="password"
               placeholder="***"
               type="password"
+              name="password"
               disabled={isLoading}
             />
           </div>

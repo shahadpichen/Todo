@@ -3,12 +3,16 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { cn } from "@/lib/utils";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { UserAuthForm } from "@/components/user-auth-form";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function AuthenticationPage() {
+  const router = useRouter();
+  if (localStorage.getItem("token")) {
+    router.push("/todo");
+  }
   const [auth, setAuth] = useState(true);
   const changeAuth = () => {
     setAuth((prevAuth) => !prevAuth);
@@ -31,7 +35,7 @@ export default function AuthenticationPage() {
           className="hidden dark:block"
         />
       </div>
-      <div className="container relative hidden h-[800px] flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
+      <div className="container relative hidden h-[100vh] flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
         <Button
           variant="ghost"
           className={"absolute right-4 top-4 md:right-8 md:top-8"}

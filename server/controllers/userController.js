@@ -8,7 +8,7 @@ const getUsers = async (req, res) => {
 
     res.status(200).json(getUsers.rows);
   } catch (error) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
@@ -26,17 +26,36 @@ const register = async (req, res) => {
       "INSERT INTO users (user_name, email, password) VALUES ($1,$2,$3) RETURNING *",
       [user_name, email, hasedPassword]
     );
+    const age = 1000 * 60 * 60 * 24 * 7;
 
-    res.status(201).json(newUser.rows[0]);
+    if (newUser && (await bcrypt.compare(password, newUser.rows[0].password))) {
+      const accessToken = jwt.sign(
+        {
+          user_name: newUser.rows[0].user_name,
+          email: newUser.rows[0].email,
+          id: newUser.rows[0].user_id,
+        },
+        process.env.ACCESS_TOKEN_SECERT,
+        { expiresIn: age }
+      );
+
+      res
+        .cookie("token", accessToken, {
+          httpOnly: true,
+          // secure: true,
+          maxAge: age,
+        })
+        .status(201)
+        .json(accessToken);
+    }
   } catch (error) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({ message: error.message });
   }
 };
 
 const login = async (req, res) => {
   try {
     const { email, password } = req.body;
-
     if (!email || !password) {
       return res.status(400).json({ error: "All fields are required" });
     }
@@ -59,7 +78,7 @@ const login = async (req, res) => {
 
       res
         .cookie("token", accessToken, {
-          httpsOnly: true,
+          httpOnly: true,
           // secure: true,
           maxAge: age,
         })
@@ -69,7 +88,7 @@ const login = async (req, res) => {
       res.status(401).json({ message: "Email or password is not valid" });
     }
   } catch (error) {
-    res.status(400).json({ message: err.message });
+    res.status(400).json({ message: error.message });
   }
 };
 

@@ -16,3 +16,6 @@ CREATE TABLE todo (
     description TEXT NOT NULL UNIQUE,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
+
+ALTER TABLE todo
+ADD COLUMN due DATE NOT NULL;

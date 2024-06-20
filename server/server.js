@@ -2,8 +2,16 @@ const express = require("express");
 const dotenv = require("dotenv");
 const userRoutes = require("./routes/userRoute");
 const todoRoutes = require("./routes/todoRoute");
+const cors = require("cors");
 
 const app = express();
+
+app.use(
+  cors({
+    origin: "http://localhost:3001",
+    credentials: true,
+  })
+);
 
 dotenv.config();
 

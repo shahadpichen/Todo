@@ -21,85 +21,72 @@ import {
 import { FaTrashCan } from "react-icons/fa6";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { format, isToday, isTomorrow, isYesterday } from "date-fns";
+import axios from "axios";
+import { Dispatch, SetStateAction } from "react";
+import { serverURL } from "@/lib/serverConfig";
+import { toast } from "@/components/ui/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 
-const todos = [
-  {
-    tid: 1,
-    description: "Clean Table",
-    due: "Today",
-  },
-  {
-    tid: 2,
-    description: "Wash The Dishes",
-    due: "Nov 10",
-  },
-  {
-    tid: 3,
-    description: "Cook Food",
-    due: "Tommorow",
-  },
-  {
-    tid: 4,
-    description: "Complete the assignment",
-    due: "Today",
-  },
-  {
-    tid: 5,
-    description: "Wash The Dishes",
-    due: "Nov 10",
-  },
-  {
-    tid: 6,
-    description: "Cook Food",
-    due: "Tommorow",
-  },
-  {
-    tid: 7,
-    description: "Complete the assignment",
-    due: "Today",
-  },
-  {
-    tid: 8,
-    description: "Clean Table",
-    due: "Today",
-  },
-  {
-    tid: 9,
-    description: "Wash The Dishes",
-    due: "Nov 10",
-  },
-  {
-    tid: 10,
-    description: "Cook Food",
-    due: "Tommorow",
-  },
-  {
-    tid: 14,
-    description: "Complete the assignment",
-    due: "Today",
-  },
-  {
-    tid: 25,
-    description: "Wash The Dishes",
-    due: "Nov 10",
-  },
-  {
-    tid: 36,
-    description: "Cook Food",
-    due: "Tommorow",
-  },
-];
+interface Todo {
+  user_id: string;
+  tid: number;
+  description: string;
+  due: string;
+}
 
-function TodoTable() {
+interface TodoTableProps {
+  todos: Todo[];
+  setOnTodoAdded: Dispatch<SetStateAction<number>>;
+}
+
+function TodoTable(props: TodoTableProps) {
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
 
-  const deleteTodo = (tid: number) => {
+  const deleteTodo = async (tid: number) => {
     console.log(tid);
+    await axios
+      .delete(`${serverURL}/todos/${tid}`, {
+        headers: {
+          Authentication: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((response) => {
+        console.log(response);
+        toast({
+          title: response.data.deleteTodo[0].description,
+          description: response.data.message,
+          action: (
+            <ToastAction altText="Goto schedule to undo">Undo</ToastAction>
+          ),
+        });
+        props.setOnTodoAdded(props.todos.length - 1);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
+  function formatDateUTC(inputDate: string): string {
+    const date = new Date(inputDate);
+
+    const timezoneOffset = date.getTimezoneOffset();
+    date.setMinutes(date.getMinutes() - timezoneOffset);
+
+    if (isToday(date)) {
+      return "Today";
+    } else if (isTomorrow(date)) {
+      return "Tomorrow";
+    } else if (isYesterday(date)) {
+      return "Yesterday";
+    } else {
+      return format(date, "MMM d");
+    }
+  }
+
   return (
-    <Table>
-      <ScrollArea className="h-[35vh] w-full rounded-md p-2">
+    <ScrollArea className="h-[35vh] w-full rounded-md p-2">
+      <Table>
         <TableHeader className="h-12">
           <TableRow>
             <TableHead>Todo</TableHead>
@@ -107,7 +94,7 @@ function TodoTable() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {todos.map((todo) => (
+          {props.todos.map((todo) => (
             <TableRow
               key={todo.tid}
               onMouseEnter={() => setHoveredRow(todo.tid)}
@@ -147,14 +134,14 @@ function TodoTable() {
                     </DialogContent>
                   </Dialog>
                 ) : (
-                  todo.due
+                  formatDateUTC(todo.due)
                 )}
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
-      </ScrollArea>
-    </Table>
+      </Table>
+    </ScrollArea>
   );
 }
 

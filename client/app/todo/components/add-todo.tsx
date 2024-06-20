@@ -1,39 +1,71 @@
-"use client";
-
 import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
+import { format } from "date-fns";
+import { Dispatch, SetStateAction } from "react";
+import axios from "axios";
+import { serverURL } from "@/lib/serverConfig";
+import { toast } from "@/components/ui/use-toast";
+import { ToastAction } from "@/components/ui/toast";
 
-function AddTodo() {
+interface Todo {
+  user_id: string;
+  tid: number;
+  description: string;
+  due: string;
+}
+interface AddTodoProps {
+  todos: Todo[];
+  setOnTodoAdded: Dispatch<SetStateAction<number>>;
+}
+
+function AddTodo({ todos, setOnTodoAdded }: AddTodoProps) {
   const [todoInput, setTodoInput] = useState("");
-  const [date, setDate] = React.useState<Date | undefined>(new Date());
+  const [date, setDate] = React.useState<Date>(new Date());
 
-  const handleDateSelect = (date: React.SetStateAction<Date | undefined>) => {
+  const handleDateSelect = (date: React.SetStateAction<Date>) => {
     setDate(date);
-    console.log("Selected Date:", date || new Date());
   };
 
-  const handleSubmit = (e: { preventDefault: () => void }) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(todoInput);
-    console.log(date);
-    setTodoInput("");
-    setDate(new Date());
+    let formattedDate = format(date, "yyyy-MM-dd");
+
+    try {
+      await axios
+        .post(
+          `${serverURL}/todos`,
+          { description: todoInput, due: formattedDate },
+          {
+            headers: {
+              Authentication: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        )
+        .then((response) => {
+          toast({
+            title: response.data.addedTodo[0].description,
+            description: response.data.message,
+            action: (
+              <ToastAction altText="Goto schedule to undo">Undo</ToastAction>
+            ),
+          });
+          setOnTodoAdded(todos.length + 1);
+          setTodoInput("");
+          setDate(new Date());
+        });
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   return (
     <form onSubmit={handleSubmit}>
       <div className="flex gap-2">
         <Input
+          required
           placeholder="Add Todo"
           value={todoInput}
           onChange={(e) => {
@@ -42,7 +74,7 @@ function AddTodo() {
         />
         <Dialog>
           <DialogTrigger>
-            <Button variant="outline">🗓️</Button>
+            <div className="border px-2 py-1 rounded-sm">🗓️</div>
           </DialogTrigger>
           <DialogContent className="px-0">
             <Calendar
