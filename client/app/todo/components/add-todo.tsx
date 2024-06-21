@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { FormEvent, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Calendar } from "@/components/ui/calendar";
@@ -23,39 +23,45 @@ interface AddTodoProps {
 
 function AddTodo({ todos, setOnTodoAdded }: AddTodoProps) {
   const [todoInput, setTodoInput] = useState("");
-  const [date, setDate] = React.useState<Date>(new Date());
+  const [date, setDate] = useState<Date>(new Date());
 
-  const handleDateSelect = (date: React.SetStateAction<Date>) => {
+  const handleDateSelect = (date: SetStateAction<Date>) => {
     setDate(date);
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     let formattedDate = format(date, "yyyy-MM-dd");
 
     try {
-      await axios
-        .post(
-          `${serverURL}/todos`,
+      const addTodo = async (url: string, headerKey: string) => {
+        const response = await axios.post(
+          `${serverURL}/${url}`,
           { description: todoInput, due: formattedDate },
           {
             headers: {
-              Authentication: `Bearer ${localStorage.getItem("token")}`,
+              [headerKey]: `Bearer ${localStorage.getItem("token")}`,
             },
           }
-        )
-        .then((response) => {
-          toast({
-            title: response.data.addedTodo[0].description,
-            description: response.data.message,
-            action: (
-              <ToastAction altText="Goto schedule to undo">Undo</ToastAction>
-            ),
-          });
-          setOnTodoAdded(todos.length + 1);
-          setTodoInput("");
-          setDate(new Date());
+        );
+
+        toast({
+          title: response.data.addedTodo[0].description,
+          description: response.data.message,
+          action: (
+            <ToastAction altText="Goto schedule to undo">Undo</ToastAction>
+          ),
         });
+        setOnTodoAdded(todos.length + 1);
+        setTodoInput("");
+        setDate(new Date());
+      };
+
+      if (localStorage.getItem("oAuth") === "false") {
+        await addTodo("todos", "Authentication");
+      } else {
+        await addTodo("oauths", "Authorization");
+      }
     } catch (error) {
       console.log(error);
     }

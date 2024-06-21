@@ -10,13 +10,43 @@ import { Label } from "./ui/label";
 import { serverURL } from "@/lib/serverConfig";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { useEffect, useState } from "react";
 
 interface UserAuthFormProps extends React.HTMLAttributes<HTMLDivElement> {
   auth: boolean;
 }
+
+const CLIENT_ID = "Ov23ctMls3JjNcsTNDjv";
+
 export function UserAuthForm({ className, auth, ...props }: UserAuthFormProps) {
   const router = useRouter();
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    const queryString = window.location.search;
+    const URLparams = new URLSearchParams(queryString);
+    const codeParam = URLparams.get("code");
+    // console.log(codeParam);
+
+    if (codeParam && !localStorage.getItem("token")) {
+      const getAccessToken = async () => {
+        await fetch(`${serverURL}/oauths/getAccessToken?code=${codeParam}`, {
+          method: "GET",
+        })
+          .then((response) => {
+            // console.log(response);
+            return response.json();
+          })
+          .then((data) => {
+            if (data.access_token) {
+              localStorage.setItem("token", data.access_token);
+              localStorage.setItem("oAuth", "true");
+            }
+          });
+      };
+      getAccessToken();
+    }
+  }, []);
 
   async function onSubmit(event: React.SyntheticEvent) {
     event.preventDefault();
@@ -62,6 +92,8 @@ export function UserAuthForm({ className, auth, ...props }: UserAuthFormProps) {
       }
 
       localStorage.setItem("token", token);
+      localStorage.setItem("oAuth", "false");
+
       setTimeout(() => {
         setIsLoading(false);
         if (token) {
@@ -85,6 +117,12 @@ export function UserAuthForm({ className, auth, ...props }: UserAuthFormProps) {
     }
   }
 
+  const loginWithGithub = () => {
+    window.location.assign(
+      "https://github.com/login/oauth/authorize?client_id=" + CLIENT_ID
+    );
+  };
+
   return (
     <div className={cn("grid gap-6", className)} {...props}>
       <form onSubmit={onSubmit}>
@@ -95,6 +133,7 @@ export function UserAuthForm({ className, auth, ...props }: UserAuthFormProps) {
                 User Name
               </Label>
               <Input
+                required
                 id="name"
                 placeholder="Shahad"
                 name="name"
@@ -111,6 +150,7 @@ export function UserAuthForm({ className, auth, ...props }: UserAuthFormProps) {
               Email
             </Label>
             <Input
+              required
               id="email"
               placeholder="name@example.com"
               type="email"
@@ -126,6 +166,7 @@ export function UserAuthForm({ className, auth, ...props }: UserAuthFormProps) {
               Password
             </Label>
             <Input
+              required
               id="password"
               placeholder="***"
               type="password"
@@ -151,7 +192,12 @@ export function UserAuthForm({ className, auth, ...props }: UserAuthFormProps) {
           </span>
         </div>
       </div>
-      <Button variant="outline" type="button" disabled={isLoading}>
+      <Button
+        variant="outline"
+        onClick={loginWithGithub}
+        type="button"
+        disabled={isLoading}
+      >
         {isLoading ? (
           <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
         ) : (

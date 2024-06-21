@@ -42,29 +42,32 @@ interface TodoTableProps {
 
 function TodoTable(props: TodoTableProps) {
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const isOAuth = localStorage.getItem("oAuth") !== "false";
 
   const deleteTodo = async (tid: number) => {
-    console.log(tid);
-    await axios
-      .delete(`${serverURL}/todos/${tid}`, {
-        headers: {
-          Authentication: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
-      .then((response) => {
-        console.log(response);
-        toast({
-          title: response.data.deleteTodo[0].description,
-          description: response.data.message,
-          action: (
-            <ToastAction altText="Goto schedule to undo">Undo</ToastAction>
-          ),
-        });
-        props.setOnTodoAdded(props.todos.length - 1);
-      })
-      .catch((error) => {
-        console.log(error);
+    const url =
+      localStorage.getItem("oAuth") === "false"
+        ? `${serverURL}/todos/${tid}`
+        : `${serverURL}/oauths/${tid}`;
+
+    const headers = {
+      [isOAuth
+        ? "Authorization"
+        : "Authentication"]: `Bearer ${localStorage.getItem("token")}`,
+    };
+
+    try {
+      const response = await axios.delete(url, { headers });
+      console.log(response);
+      toast({
+        title: response.data.deleteTodo[0].description,
+        description: response.data.message,
+        action: <ToastAction altText="Goto schedule to undo">Undo</ToastAction>,
       });
+      props.setOnTodoAdded(props.todos.length - 1);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   function formatDateUTC(inputDate: string): string {

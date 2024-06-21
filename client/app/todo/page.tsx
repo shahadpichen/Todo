@@ -29,27 +29,62 @@ function Page() {
       return;
     }
 
-    axios
-      .get(`${serverURL}/todos/getUser`, {
-        headers: { Authentication: `Bearer ${localStorage.getItem("token")}` },
-      })
-      .then((response) => {
-        setUsername(response.data[0].user_name);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    if (localStorage.getItem("oAuth") === "false") {
+      axios
+        .get(`${serverURL}/todos/getUser`, {
+          headers: {
+            Authentication: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+        .then((response) => {
+          setUsername(response.data[0].user_name);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
 
-    axios
-      .get(`${serverURL}/todos`, {
-        headers: { Authentication: `Bearer ${localStorage.getItem("token")}` },
-      })
-      .then((response) => {
-        setTodos(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+      axios
+        .get(`${serverURL}/todos`, {
+          headers: {
+            Authentication: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+        .then((response) => {
+          setTodos(response.data);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      const getUserData = async () => {
+        await fetch(`${serverURL}/oauths/getUserData`, {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+          .then((response) => {
+            return response.json();
+          })
+          .then((data) => {
+            setUsername(data.name);
+          });
+      };
+      getUserData();
+
+      axios
+        .get(`${serverURL}/oAuths`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+        .then((response) => {
+          setTodos(response.data);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }
   }, [onTodoAdded]);
 
   return (

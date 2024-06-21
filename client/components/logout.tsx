@@ -20,6 +20,8 @@ function Logout() {
       );
 
       localStorage.removeItem("token");
+      localStorage.removeItem("oAuth");
+
       router.push("/");
     } catch (error) {
       if (axios.isAxiosError(error)) {
