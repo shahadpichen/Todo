@@ -24,44 +24,45 @@ interface AddTodoProps {
 function AddTodo({ todos, setOnTodoAdded }: AddTodoProps) {
   const [todoInput, setTodoInput] = useState("");
   const [date, setDate] = useState<Date>(new Date());
+  const isOAuth = localStorage.getItem("oAuth") !== "false";
 
   const handleDateSelect = (date: SetStateAction<Date>) => {
     setDate(date);
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    console.log("ASd");
     e.preventDefault();
     let formattedDate = format(date, "yyyy-MM-dd");
+    console.log(todoInput, formattedDate);
+
+    const url =
+      localStorage.getItem("oAuth") === "false"
+        ? `${serverURL}/todos/`
+        : `${serverURL}/oauths/`;
+
+    const headers = {
+      [isOAuth
+        ? "Authorization"
+        : "Authentication"]: `Bearer ${localStorage.getItem("token")}`,
+      withCredentials: true,
+    };
 
     try {
-      const addTodo = async (url: string, headerKey: string) => {
-        const response = await axios.post(
-          `${serverURL}/${url}`,
-          { description: todoInput, due: formattedDate },
-          {
-            headers: {
-              [headerKey]: `Bearer ${localStorage.getItem("token")}`,
-            },
-          }
-        );
+      const response = await axios.post(
+        url,
+        { description: todoInput, due: formattedDate },
+        { headers }
+      );
 
-        toast({
-          title: response.data.addedTodo[0].description,
-          description: response.data.message,
-          action: (
-            <ToastAction altText="Goto schedule to undo">Undo</ToastAction>
-          ),
-        });
-        setOnTodoAdded(todos.length + 1);
-        setTodoInput("");
-        setDate(new Date());
-      };
-
-      if (localStorage.getItem("oAuth") === "false") {
-        await addTodo("todos", "Authentication");
-      } else {
-        await addTodo("oauths", "Authorization");
-      }
+      toast({
+        title: response.data.addedTodo[0].description,
+        description: response.data.message,
+        action: <ToastAction altText="Goto schedule to undo">Undo</ToastAction>,
+      });
+      setOnTodoAdded(todos.length + 1);
+      setTodoInput("");
+      setDate(new Date());
     } catch (error) {
       console.log(error);
     }

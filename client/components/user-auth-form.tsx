@@ -41,6 +41,7 @@ export function UserAuthForm({ className, auth, ...props }: UserAuthFormProps) {
             if (data.access_token) {
               localStorage.setItem("token", data.access_token);
               localStorage.setItem("oAuth", "true");
+              router.push("/todo");
             }
           });
       };
