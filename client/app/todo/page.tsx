@@ -8,6 +8,8 @@ import axios from "axios";
 import { serverURL } from "@/lib/serverConfig";
 import { useRouter } from "next/navigation";
 import Logout from "@/components/logout";
+import { Chat } from "../chat/chat";
+import { HiOutlineArrowTrendingDown } from "react-icons/hi2";
 
 interface Todo {
   user_id: string;
@@ -17,7 +19,6 @@ interface Todo {
 }
 
 function Page() {
-  // corrected function name to uppercase Page
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -98,6 +99,9 @@ function Page() {
         <AddTodo todos={todos} setOnTodoAdded={setOnTodoAdded} />
         <TodoTable todos={todos} setOnTodoAdded={setOnTodoAdded} />
       </section>
+      <HiOutlineArrowTrendingDown className="absolute bottom-[10%] text-5xl right-[7%]" />
+
+      <Chat />
     </main>
   );
 }
