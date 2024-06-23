@@ -46,7 +46,7 @@ function ChatSection() {
         <div className="flex flex-wrap gap-3">
           {usersList.map((user) => (
             <div
-              className="flex gap-2 h-[6vh] max-w-[70%] w-fit cursor-pointer"
+              className="flex gap-2 items-center justify-center h-[6vh] max-w-[70%] w-fit cursor-pointer hover:bg-zinc-800 rounded-md py-7 px-2"
               onClick={() => userSelected(user.name, user.id)}
             >
               <Image

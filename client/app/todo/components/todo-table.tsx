@@ -97,51 +97,63 @@ function TodoTable(props: TodoTableProps) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {props.todos.map((todo) => (
-            <TableRow
-              key={todo.tid}
-              onMouseEnter={() => setHoveredRow(todo.tid)}
-              onMouseLeave={() => setHoveredRow(null)}
-              className="h-11"
-            >
-              <TableCell>{todo.description}</TableCell>
-              <TableCell className="text-right cursor-pointer">
-                {hoveredRow === todo.tid ? (
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <button className="text-center w-5">
-                        <FaTrashCan />
-                      </button>
-                    </DialogTrigger>
+          {props.todos.map((todo) => {
+            let today = new Date();
 
-                    <DialogContent className="sm:max-w-[425px] flex flex-col justify-center items-center">
-                      <DialogHeader>
-                        <DialogTitle className="text-center">
-                          Are you sure you want to delete?
-                        </DialogTitle>
-                        <DialogDescription className="text-center">
-                          Changes made here cannot be undone. Click 'Delete' to
-                          remove the to-do item.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter>
-                        <Button
-                          onClick={() => {
-                            deleteTodo(todo.tid);
-                          }}
-                          type="submit"
-                        >
-                          Delete
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                ) : (
-                  formatDateUTC(todo.due)
-                )}
-              </TableCell>
-            </TableRow>
-          ))}
+            let yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+
+            console.log(yesterday);
+
+            console.log("--------");
+            return (
+              <TableRow
+                key={todo.tid}
+                onMouseEnter={() => setHoveredRow(todo.tid)}
+                onMouseLeave={() => setHoveredRow(null)}
+                className={`h-11 ${
+                  new Date(todo.due) <= yesterday ? "line-through" : ""
+                }`}
+              >
+                <TableCell>{todo.description}</TableCell>
+                <TableCell className="text-right cursor-pointer">
+                  {hoveredRow === todo.tid ? (
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <button className="text-center w-5">
+                          <FaTrashCan />
+                        </button>
+                      </DialogTrigger>
+
+                      <DialogContent className="sm:max-w-[425px]flex flex-col justify-center items-center">
+                        <DialogHeader>
+                          <DialogTitle className="text-center">
+                            Are you sure you want to delete?
+                          </DialogTitle>
+                          <DialogDescription className="text-center">
+                            Changes made here cannot be undone. Click 'Delete'
+                            to remove the to-do item.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <Button
+                            onClick={() => {
+                              deleteTodo(todo.tid);
+                            }}
+                            type="submit"
+                          >
+                            Delete
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  ) : (
+                    formatDateUTC(todo.due)
+                  )}
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </ScrollArea>
