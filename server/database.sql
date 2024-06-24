@@ -38,4 +38,5 @@ ADD COLUMN due DATE NOT NULL;
 ALTER TABLE todo
 DROP CONSTRAINT description;
 
+
 INSERT INTO oauthTodo (description,node_id,due) VALUES ("Clean","MDQ6VXNlcjkxMDgxMzc4","2024-06-27");

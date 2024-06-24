@@ -49,12 +49,6 @@ function ChatSection() {
               className="flex gap-2 items-center justify-center h-[6vh] max-w-[70%] w-fit cursor-pointer hover:bg-zinc-800 rounded-md py-7 px-2"
               onClick={() => userSelected(user.name, user.id)}
             >
-              <Image
-                src={image1}
-                alt="image1"
-                width={40}
-                className="rounded-full h-[40px]"
-              />
               <div className="flex flex-col">
                 <h1 className="text-sm">{user.name}</h1>
                 <p className="text-xs text-zinc-400">#{user.id}</p>
@@ -65,13 +59,6 @@ function ChatSection() {
       </ScrollArea>
       <section className="flex flex-col border rounded-md p-3 w-full h-[55vh]">
         <div className="flex gap-4 h-[8vh]">
-          <Image
-            src={image1}
-            alt="image1"
-            width={50}
-            height={50}
-            className="rounded-full h-[50px]"
-          />
           <div className="flex flex-col">
             <h1>Shahad</h1>
             <p className="text-sm text-zinc-400">shahad@gmail.com</p>

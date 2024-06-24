@@ -103,9 +103,6 @@ function TodoTable(props: TodoTableProps) {
             let yesterday = new Date(today);
             yesterday.setDate(today.getDate() - 1);
 
-            console.log(yesterday);
-
-            console.log("--------");
             return (
               <TableRow
                 key={todo.tid}
