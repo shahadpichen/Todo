@@ -29,8 +29,33 @@ CREATE TABLE oauthTodo (
     FOREIGN KEY (node_id) REFERENCES oauthUser(node_id)
 );
 
+CREATE TABLE chats (
+    chat_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    users TEXT[],                      
+    created_at TIMESTAMP DEFAULT NOW(),   
+    messages TEXT[],                      
+    last_message TEXT,                    
+    seen_by TEXT[]                     
+);
+
+CREATE TABLE message (
+    message_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),  
+    chat_id UUID REFERENCES chats(chat_id) ON DELETE CASCADE,  
+    user_id UUID,                                    
+    message TEXT,                                    
+    created_at TIMESTAMP DEFAULT NOW()               
+);
+
+CREATE TABLE chatList (
+    chat_id UUID REFERENCES chats(chat_id) ON DELETE CASCADE,  
+);
+
+
 ALTER TABLE todo
 ADD COLUMN due DATE NOT NULL;
+
+ALTER TABLE users
+ADD COLUMN chat_ids UUID[];
 
 ALTER TABLE oauthTodo
 ADD COLUMN due DATE NOT NULL;

@@ -2,6 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const userRoutes = require("./routes/userRoute");
 const todoRoutes = require("./routes/todoRoute");
+const chatRoutes = require("./routes/chatRoute");
 const oauthRoutes = require("./routes/oauthRoutes");
 
 const bodyParser = require("body-parser");
@@ -25,6 +26,7 @@ app.use(express.json());
 app.use("/users", userRoutes);
 app.use("/todos", todoRoutes);
 app.use("/oauths", oauthRoutes);
+app.use("/chats", chatRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
