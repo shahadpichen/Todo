@@ -14,7 +14,6 @@ CREATE TABLE oauthUser (
     user_name VARCHAR(30) NOT NULL
 );
 
-
 CREATE TABLE todo (
     user_id UUID NOT NULL,
     tid SERIAL PRIMARY KEY NOT NULL,
@@ -52,7 +51,6 @@ CREATE TABLE chatList (
     user_id TEXT NOT NULL UNIQUE
 );
 
-
 ALTER TABLE todo
 ADD COLUMN due DATE NOT NULL;
 
@@ -67,3 +65,24 @@ DROP CONSTRAINT description;
 
 
 INSERT INTO oauthTodo (description,node_id,due) VALUES ("Clean","MDQ6VXNlcjkxMDgxMzc4","2024-06-27");
+
+
+CREATE OR REPLACE FUNCTION update_messages_array()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE chats
+    SET messages = array_append(messages, NEW.message),
+        last_message = NEW.message
+    WHERE chat_id = NEW.chat_id;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER after_message_insert
+AFTER INSERT ON message
+FOR EACH ROW
+EXECUTE FUNCTION update_messages_array();
+
+INSERT INTO message (chat_id, user_id, message)
+VALUES ('f8275b9c-c98d-4b99-ac51-3380700bb452', '97b541f6-3ee5-42a4-83d0-d3c35660c6da', 'Hello!!!!');

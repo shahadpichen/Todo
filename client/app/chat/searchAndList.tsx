@@ -1,9 +1,15 @@
-import React, { useState, ChangeEvent, useEffect } from "react";
+import React, {
+  useState,
+  ChangeEvent,
+  useEffect,
+  Dispatch,
+  SetStateAction,
+} from "react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import image1 from "../../public/01.png";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Card, CardContent } from "@/components/ui/card"; // Ensure you have these components
+import { Card, CardContent } from "@/components/ui/card";
 import axios from "axios";
 import { serverURL } from "@/lib/serverConfig";
 import { UUID } from "crypto";
@@ -19,7 +25,21 @@ interface ChatList {
   user_name: string;
 }
 
-function SearchAndList() {
+interface Props {
+  setName: Dispatch<SetStateAction<string>>;
+  setId: Dispatch<SetStateAction<string>>;
+  setMessages: Dispatch<SetStateAction<never[]>>;
+  setChatId: Dispatch<SetStateAction<string>>;
+  inputMessage: string;
+}
+
+function SearchAndList({
+  setName,
+  setId,
+  setMessages,
+  setChatId,
+  inputMessage,
+}: Props) {
   const [usersList, setUsersList] = useState<UsersList[]>([]);
   const [chatList, setChatList] = useState<ChatList[]>([]);
 
@@ -65,7 +85,6 @@ function SearchAndList() {
 
   const handleButtonClick = () => {
     if (selectedUser) {
-      console.log(selectedUser.user_id);
       axios
         .post(
           `${serverURL}/chats/addChatList`,
@@ -85,8 +104,38 @@ function SearchAndList() {
     }
   };
 
-  const userSelected = (name: string, id: string) => {
-    console.log(name, id);
+  const userSelected = (name: string, id: string, chat_id: string) => {
+    console.log(name, id, chat_id);
+    axios
+      .post(
+        `${serverURL}/chats`,
+        { name, chat_id, user_id: id },
+        {
+          headers: {
+            Authentication: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      )
+      .catch((error) => {
+        console.log(error);
+      });
+    axios
+      .get(`${serverURL}/chats/${chat_id}`, {
+        headers: {
+          Authentication: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((response) => {
+        if (response.data.length !== 0) {
+          setName(name),
+            setId(id),
+            setChatId(chat_id),
+            setMessages(response.data[0].messages);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   return (
@@ -122,7 +171,9 @@ function SearchAndList() {
             <div
               key={user.user_id}
               className="flex gap-2 items-center justify-center h-[6vh] max-w-[70%] w-fit cursor-pointer hover:bg-zinc-800 rounded-md py-7 px-2"
-              onClick={() => userSelected(user.user_name, user.user_id)}
+              onClick={() =>
+                userSelected(user.user_name, user.user_id, user.chat_id)
+              }
             >
               <Image
                 src={image1}

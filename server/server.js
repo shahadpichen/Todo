@@ -4,6 +4,7 @@ const userRoutes = require("./routes/userRoute");
 const todoRoutes = require("./routes/todoRoute");
 const chatRoutes = require("./routes/chatRoutes");
 const oauthRoutes = require("./routes/oauthRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -27,6 +28,7 @@ app.use("/users", userRoutes);
 app.use("/todos", todoRoutes);
 app.use("/oauths", oauthRoutes);
 app.use("/chats", chatRoutes);
+app.use("/messages", messageRoutes);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
