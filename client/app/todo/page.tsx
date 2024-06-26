@@ -41,6 +41,8 @@ function Page() {
         .then((response) => {
           setUsername(response.data[0].user_name);
           setUserId(response.data[0].user_id);
+          localStorage.setItem("user_id", response.data[0].user_id);
+          localStorage.setItem("user_name", response.data[0].user_name);
         })
         .catch((error) => {
           console.log(error);

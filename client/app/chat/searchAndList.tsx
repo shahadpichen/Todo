@@ -28,18 +28,10 @@ interface ChatList {
 interface Props {
   setName: Dispatch<SetStateAction<string>>;
   setId: Dispatch<SetStateAction<string>>;
-  setMessages: Dispatch<SetStateAction<never[]>>;
   setChatId: Dispatch<SetStateAction<string>>;
-  inputMessage: string;
 }
 
-function SearchAndList({
-  setName,
-  setId,
-  setMessages,
-  setChatId,
-  inputMessage,
-}: Props) {
+function SearchAndList({ setName, setId, setChatId }: Props) {
   const [usersList, setUsersList] = useState<UsersList[]>([]);
   const [chatList, setChatList] = useState<ChatList[]>([]);
 
@@ -62,12 +54,18 @@ function SearchAndList({
       });
 
     axios
-      .get(`${serverURL}/chats/chatListUsers`, {
-        headers: {
-          Authentication: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
+      .get(
+        `${serverURL}/chats/chatListUsers/${localStorage.getItem(
+          "user_id"
+        )}/${localStorage.getItem("user_name")}`,
+        {
+          headers: {
+            Authentication: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      )
       .then((response) => {
+        console.log(response);
         setChatList(response.data);
       })
       .catch((error) => {
@@ -87,7 +85,7 @@ function SearchAndList({
     if (selectedUser) {
       axios
         .post(
-          `${serverURL}/chats/addChatList`,
+          `${serverURL}/chats/addChatList/${localStorage.getItem("user_id")}`,
           { user_name: selectedUser.user_name, user_id: selectedUser.user_id },
           {
             headers: {
@@ -105,7 +103,10 @@ function SearchAndList({
   };
 
   const userSelected = (name: string, id: string, chat_id: string) => {
-    console.log(name, id, chat_id);
+    setName(name);
+    setId(id);
+    setChatId(chat_id);
+
     axios
       .post(
         `${serverURL}/chats`,
@@ -116,23 +117,6 @@ function SearchAndList({
           },
         }
       )
-      .catch((error) => {
-        console.log(error);
-      });
-    axios
-      .get(`${serverURL}/chats/${chat_id}`, {
-        headers: {
-          Authentication: `Bearer ${localStorage.getItem("token")}`,
-        },
-      })
-      .then((response) => {
-        if (response.data.length !== 0) {
-          setName(name),
-            setId(id),
-            setChatId(chat_id),
-            setMessages(response.data[0].messages);
-        }
-      })
       .catch((error) => {
         console.log(error);
       });

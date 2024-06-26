@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import image1 from ".././../public/01.png";
 import { IoMdSend } from "react-icons/io";
@@ -17,11 +17,31 @@ function ChatSection() {
   const [id, setId] = useState("");
   const [inputMessage, setInputMessage] = useState("");
   const [chatId, setChatId] = useState("");
+  const [updateFlag, setUpdateFlag] = useState(false);
 
   const parsedMessages = messages?.map((message) => JSON.parse(message));
 
-  const handleMessageSend = () => {
-    console.log("Message to send:", inputMessage);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    axios
+      .get(`${serverURL}/chats/${chatId}`, {
+        headers: {
+          Authentication: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((response) => {
+        if (response.data.length !== 0) {
+          setMessages(response.data[0].messages);
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [chatId, updateFlag]);
+
+  const handleMessageSend = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+
     axios
       .post(
         `${serverURL}/messages`,
@@ -32,8 +52,9 @@ function ChatSection() {
           },
         }
       )
-      .then((response) => {
+      .then(() => {
         setInputMessage("");
+        setUpdateFlag((prev) => !prev);
       })
       .catch((error) => {
         console.log(error);
@@ -42,13 +63,7 @@ function ChatSection() {
 
   return (
     <section className="mt-4 flex flex-col justify-between h-[83vh]">
-      <SearchAndList
-        setName={setName}
-        setId={setId}
-        setMessages={setMessages}
-        setChatId={setChatId}
-        inputMessage={inputMessage}
-      />
+      <SearchAndList setName={setName} setId={setId} setChatId={setChatId} />
       <section className="flex flex-col border rounded-md p-3 w-full h-[55vh]">
         <div className="flex gap-4 h-[8vh]">
           <Image
@@ -60,7 +75,7 @@ function ChatSection() {
           />
           <div className="flex flex-col">
             <h1>{name}</h1>
-            <p className="text-sm text-zinc-400">{id}</p>
+            <p className="text-sm text-zinc-400">{`#${id.slice(-5)}`}</p>
           </div>
         </div>
         <ScrollArea className="h-[41vh]">
@@ -70,12 +85,14 @@ function ChatSection() {
                 <div
                   // key={id}
                   className={`flex ${
-                    listOfChats.user_id !== id ? "justify-end" : "justify-start"
+                    listOfChats.user_id === localStorage.getItem("user_id")
+                      ? "justify-end"
+                      : "justify-start"
                   } w-full`}
                 >
                   <p
                     className={`flex p-2 rounded-md text-sm max-w-[70%] w-fit ${
-                      listOfChats.user_id !== id
+                      listOfChats.user_id === localStorage.getItem("user_id")
                         ? "bg-zinc-100 text-zinc-900"
                         : "bg-zinc-800 text-zinc-100"
                     }`}
@@ -87,17 +104,19 @@ function ChatSection() {
             })}
           </div>
         </ScrollArea>
-        <div className="flex gap-2 h-[6vh] items-end">
-          <Input
-            type="text"
-            placeholder="Type your message..."
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-          />
-          <Button variant="secondary" onClick={handleMessageSend}>
-            <IoMdSend />
-          </Button>
-        </div>
+        <form onSubmit={handleMessageSend}>
+          <div className="flex gap-2 h-[6vh] items-end">
+            <Input
+              type="text"
+              placeholder="Type your message..."
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
+            />
+            <Button type="submit" variant="secondary">
+              <IoMdSend />
+            </Button>
+          </div>
+        </form>
       </section>
     </section>
   );

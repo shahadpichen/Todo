@@ -90,6 +90,7 @@ export function UserAuthForm({ className, auth, ...props }: UserAuthFormProps) {
           }
         );
         token = response.data.accessToken;
+        console.log(response);
       }
 
       localStorage.setItem("token", token);

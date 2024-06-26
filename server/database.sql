@@ -48,7 +48,8 @@ CREATE TABLE message (
 CREATE TABLE chatList (
     user_name VARCHAR(30) NOT NULL,
     chat_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    user_id TEXT NOT NULL UNIQUE
+    user_id TEXT NOT NULL UNIQUE,
+    owner_id TEXT 
 );
 
 ALTER TABLE todo
@@ -62,6 +63,9 @@ ADD COLUMN due DATE NOT NULL;
 
 ALTER TABLE todo
 DROP CONSTRAINT description;
+
+ALTER TABLE chatList
+ADD COLUMN owner_id TEXT;
 
 
 INSERT INTO oauthTodo (description,node_id,due) VALUES ("Clean","MDQ6VXNlcjkxMDgxMzc4","2024-06-27");
