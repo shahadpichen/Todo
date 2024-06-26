@@ -21,6 +21,7 @@ interface Todo {
 function Page() {
   const router = useRouter();
   const [username, setUsername] = useState("");
+  const [userId, setUserId] = useState("");
   const [todos, setTodos] = useState<Todo[]>([]);
   const [onTodoAdded, setOnTodoAdded] = useState(0);
 
@@ -39,6 +40,7 @@ function Page() {
         })
         .then((response) => {
           setUsername(response.data[0].user_name);
+          setUserId(response.data[0].user_id);
         })
         .catch((error) => {
           console.log(error);
@@ -93,6 +95,9 @@ function Page() {
       <h1 className="absolute top-10 left-10 text-xl">
         Hello <span className="font-semibold text-2xl">{username}!</span>
       </h1>
+      <p className="absolute top-[9%] left-10 text-sm text-zinc-500">
+        {`(#${userId.slice(-5)})`}
+      </p>
       <ModeToggle />
       <Logout />
       <section className="w-[40%] flex flex-col gap-2">

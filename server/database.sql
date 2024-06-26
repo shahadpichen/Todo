@@ -30,7 +30,7 @@ CREATE TABLE oauthTodo (
 );
 
 CREATE TABLE chats (
-    chat_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    chat_id UUID PRIMARY KEY REFERENCES chatList(chat_id) ON DELETE CASCADE,  
     users TEXT[],                      
     created_at TIMESTAMP DEFAULT NOW(),   
     messages TEXT[],                      
@@ -47,7 +47,9 @@ CREATE TABLE message (
 );
 
 CREATE TABLE chatList (
-    chat_id UUID REFERENCES chats(chat_id) ON DELETE CASCADE,  
+    user_name VARCHAR(30) NOT NULL,
+    chat_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id TEXT NOT NULL UNIQUE
 );
 
 

@@ -1,38 +1,87 @@
-import React, { useState, ChangeEvent } from "react";
+import React, { useState, ChangeEvent, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import image1 from "../../public/01.png";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent } from "@/components/ui/card"; // Ensure you have these components
+import axios from "axios";
+import { serverURL } from "@/lib/serverConfig";
+import { UUID } from "crypto";
 
-const usersList = [
-  { name: "Shahad Pichen", id: "12f" },
-  { name: "Sanu", id: "23f" },
-  { name: "Akshay", id: "34" },
-  { name: "Afsal M", id: "45" },
-  { name: "Rayan", id: "56" },
-  { name: "Mishal", id: "67" },
-];
+interface UsersList {
+  user_id: UUID;
+  user_name: string;
+}
+
+interface ChatList {
+  user_id: UUID;
+  chat_id: UUID;
+  user_name: string;
+}
 
 function SearchAndList() {
+  const [usersList, setUsersList] = useState<UsersList[]>([]);
+  const [chatList, setChatList] = useState<ChatList[]>([]);
+
   const [userId, setUserId] = useState<string>("");
   const [userExists, setUserExists] = useState<boolean>(false);
-  const [selectedUser, setSelectedUser] = useState<{
-    name: string;
-    id: string;
-  } | null>(null);
+  const [selectedUser, setSelectedUser] = useState<UsersList | null>(null);
+
+  useEffect(() => {
+    axios
+      .get(`${serverURL}/chats`, {
+        headers: {
+          Authentication: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((response) => {
+        setUsersList(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+    axios
+      .get(`${serverURL}/chats/chatListUsers`, {
+        headers: {
+          Authentication: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
+      .then((response) => {
+        setChatList(response.data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const id = event.target.value;
+    const id = event.target.value.slice(-5);
     setUserId(id);
-    const user = usersList.find((user) => user.id === id);
+    const user = usersList.find((user) => user.user_id.slice(-5) === id);
     setUserExists(!!user);
     setSelectedUser(user || null);
   };
 
   const handleButtonClick = () => {
     if (selectedUser) {
-      console.log(selectedUser.id);
+      console.log(selectedUser.user_id);
+      axios
+        .post(
+          `${serverURL}/chats/addChatList`,
+          { user_name: selectedUser.user_name, user_id: selectedUser.user_id },
+          {
+            headers: {
+              Authentication: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        )
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
     }
   };
 
@@ -57,8 +106,10 @@ function SearchAndList() {
                 onClick={handleButtonClick}
               >
                 <div className="flex items-center ml-2 gap-2">
-                  <h1 className="text-sm">{selectedUser.name}</h1>
-                  <p className="text-xs text-zinc-400">#{selectedUser.id}</p>
+                  <h1 className="text-sm">{selectedUser.user_name}</h1>
+                  <p className="text-xs text-zinc-400">
+                    #{selectedUser.user_id.slice(-5)}
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -67,11 +118,11 @@ function SearchAndList() {
       </div>
       <ScrollArea className="h-[20vh] border rounded-md p-3">
         <div className="flex flex-wrap gap-3">
-          {usersList.map((user) => (
+          {chatList.map((user) => (
             <div
-              key={user.id}
+              key={user.user_id}
               className="flex gap-2 items-center justify-center h-[6vh] max-w-[70%] w-fit cursor-pointer hover:bg-zinc-800 rounded-md py-7 px-2"
-              onClick={() => userSelected(user.name, user.id)}
+              onClick={() => userSelected(user.user_name, user.user_id)}
             >
               <Image
                 src={image1}
@@ -81,8 +132,10 @@ function SearchAndList() {
                 className="rounded-full h-[40px]"
               />
               <div className="flex flex-col">
-                <h1 className="text-sm">{user.name}</h1>
-                <p className="text-xs text-zinc-400">#{user.id}</p>
+                <h1 className="text-sm">{user.user_name}</h1>
+                <p className="text-xs text-zinc-400">
+                  #{user.user_id.slice(-5)}
+                </p>
               </div>
             </div>
           ))}

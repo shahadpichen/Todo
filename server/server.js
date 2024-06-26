@@ -2,7 +2,7 @@ const express = require("express");
 const dotenv = require("dotenv");
 const userRoutes = require("./routes/userRoute");
 const todoRoutes = require("./routes/todoRoute");
-const chatRoutes = require("./routes/chatRoute");
+const chatRoutes = require("./routes/chatRoutes");
 const oauthRoutes = require("./routes/oauthRoutes");
 
 const bodyParser = require("body-parser");

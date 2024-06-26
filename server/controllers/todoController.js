@@ -3,7 +3,7 @@ const pool = require("../db");
 const getUser = async (req, res) => {
   try {
     const getUser = await pool.query(
-      "SELECT user_name FROM users where user_id = $1",
+      "SELECT user_name,user_id FROM users where user_id = $1",
       [req.user.id]
     );
     res.status(200).json(getUser.rows);
