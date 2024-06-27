@@ -151,52 +151,30 @@ function SearchAndList({ setName, setId, setChatId }: Props) {
       </div>
       <ScrollArea className="h-[20vh] border rounded-md p-3">
         <div className="flex flex-wrap gap-3">
-          {chatList.map((user) => (
-            <div
-              key={user.user_id}
-              className="flex gap-2 items-center justify-center h-[6vh] max-w-[70%] w-fit cursor-pointer hover:bg-zinc-800 rounded-md py-7 px-2"
-              onClick={() =>
-                userSelected(user.user_name, user.user_id, user.chat_id)
-              }
-            >
-              <Image
-                src={image1}
-                alt="image1"
-                width={40}
-                height={40}
-                className="rounded-full h-[40px]"
-              />
-              <div className="flex flex-col">
-                <h1 className="text-sm">{user.user_name}</h1>
-                <p className="text-xs text-zinc-400">
-                  #{user.user_id.slice(-5)}
-                </p>
+          {[...chatList, ...ownerList].map((user) => {
+            const name = user.user_name || user.owner_name;
+            const id = user.user_id || user.owner_id;
+
+            return (
+              <div
+                key={id}
+                className="flex gap-2 items-center justify-center h-[6vh] max-w-[70%] w-fit cursor-pointer hover:bg-zinc-800 rounded-md py-7 px-2"
+                onClick={() => userSelected(name, id, user.chat_id)}
+              >
+                <Image
+                  src={image1}
+                  alt="image1"
+                  width={40}
+                  height={40}
+                  className="rounded-full h-[40px]"
+                />
+                <div className="flex flex-col">
+                  <h1 className="text-sm">{name}</h1>
+                  <p className="text-xs text-zinc-400">#{id.slice(-5)}</p>
+                </div>
               </div>
-            </div>
-          ))}
-          {ownerList.map((user) => (
-            <div
-              key={user.user_id}
-              className="flex gap-2 items-center justify-center h-[6vh] max-w-[70%] w-fit cursor-pointer hover:bg-zinc-800 rounded-md py-7 px-2"
-              onClick={() =>
-                userSelected(user.owner_name, user.owner_id, user.chat_id)
-              }
-            >
-              <Image
-                src={image1}
-                alt="image1"
-                width={40}
-                height={40}
-                className="rounded-full h-[40px]"
-              />
-              <div className="flex flex-col">
-                <h1 className="text-sm">{user.owner_name}</h1>
-                <p className="text-xs text-zinc-400">
-                  #{user.owner_id.slice(-5)}
-                </p>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </ScrollArea>
     </>
