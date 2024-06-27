@@ -14,7 +14,7 @@ const addChatList = async (req, res) => {
     const { user_name, user_id } = req.body;
     const addChatList = await pool.query(
       "INSERT INTO chatList (user_name,user_id,owner_id,owner_name) VALUES ($1,$2,$3,$4) RETURNING *",
-      [user_name, user_id, req.params.id, req.params.name]
+      [user_name, user_id, req.user.id, req.params.name]
     );
 
     res.status(200).json(addChatList.rows);
@@ -25,18 +25,28 @@ const addChatList = async (req, res) => {
 
 const chatListUsers = async (req, res) => {
   try {
-    const chatList = await pool.query(
-      "SELECT * FROM chatList where owner_id = $1 OR user_id = $1",
-      [req.params.id]
+    const result1 = await pool.query(
+      "SELECT user_name, user_id, chat_id FROM chatList WHERE owner_id = $1",
+      [req.user.id]
     );
-    res.status(200).json(chatList.rows);
+
+    const result2 = await pool.query(
+      "SELECT owner_name, owner_id, chat_id FROM chatList WHERE user_id = $1",
+      [req.user.id]
+    );
+
+    const combinedResults = {
+      userChats: result1.rows,
+      ownerChats: result2.rows,
+    };
+
+    res.status(200).json(combinedResults);
   } catch (error) {
-    res.status(400).json({ message: "Bad Request" });
+    res.status(400).json({ message: "Bad Request", error: error.message });
   }
 };
 
 const getChat = async (req, res) => {
-  console.log(req.params.id);
   try {
     const getChat = await pool.query("SELECT * FROM chats where chat_id = $1", [
       req.params.id,
@@ -74,7 +84,6 @@ const addChat = async (req, res) => {
 
     res.status(200).json(addChatList.rows);
   } catch (error) {
-    console.error(error);
     res.status(400).json({ message: "Bad Request" });
   }
 };

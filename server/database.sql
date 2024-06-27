@@ -49,7 +49,8 @@ CREATE TABLE chatList (
     user_name VARCHAR(30) NOT NULL,
     chat_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id TEXT NOT NULL UNIQUE,
-    owner_id TEXT 
+    owner_id TEXT,
+    owner_name TEXT 
 );
 
 ALTER TABLE todo
@@ -66,6 +67,9 @@ DROP CONSTRAINT description;
 
 ALTER TABLE chatList
 ADD COLUMN owner_id TEXT;
+
+ALTER TABLE chatList
+ADD COLUMN owner_name TEXT;
 
 
 INSERT INTO oauthTodo (description,node_id,due) VALUES ("Clean","MDQ6VXNlcjkxMDgxMzc4","2024-06-27");
@@ -90,3 +94,5 @@ EXECUTE FUNCTION update_messages_array();
 
 INSERT INTO message (chat_id, user_id, message)
 VALUES ('f8275b9c-c98d-4b99-ac51-3380700bb452', '97b541f6-3ee5-42a4-83d0-d3c35660c6da', 'Hello!!!!');
+
+SELECT * FROM chatList where owner_id = '97b541f6-3ee5-42a4-83d0-d3c35660c6da' OR user_id = '97b541f6-3ee5-42a4-83d0-d3c35660c6da';

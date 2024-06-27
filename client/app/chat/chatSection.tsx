@@ -64,59 +64,65 @@ function ChatSection() {
   return (
     <section className="mt-4 flex flex-col justify-between h-[83vh]">
       <SearchAndList setName={setName} setId={setId} setChatId={setChatId} />
+
       <section className="flex flex-col border rounded-md p-3 w-full h-[55vh]">
-        <div className="flex gap-4 h-[8vh]">
-          <Image
-            src={image1}
-            alt="image1"
-            width={50}
-            height={50}
-            className="rounded-full h-[50px]"
-          />
-          <div className="flex flex-col">
-            <h1>{name}</h1>
-            <p className="text-sm text-zinc-400">{`#${id.slice(-5)}`}</p>
-          </div>
-        </div>
-        <ScrollArea className="h-[41vh]">
-          <div className="flex flex-col pr-3 gap-2 ">
-            {parsedMessages?.map((listOfChats) => {
-              return (
-                <div
-                  // key={id}
-                  className={`flex ${
-                    listOfChats.user_id === localStorage.getItem("user_id")
-                      ? "justify-end"
-                      : "justify-start"
-                  } w-full`}
-                >
-                  <p
-                    className={`flex p-2 rounded-md text-sm max-w-[70%] w-fit ${
-                      listOfChats.user_id === localStorage.getItem("user_id")
-                        ? "bg-zinc-100 text-zinc-900"
-                        : "bg-zinc-800 text-zinc-100"
-                    }`}
-                  >
-                    {listOfChats.message}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </ScrollArea>
-        <form onSubmit={handleMessageSend}>
-          <div className="flex gap-2 h-[6vh] items-end">
-            <Input
-              type="text"
-              placeholder="Type your message..."
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-            />
-            <Button type="submit" variant="secondary">
-              <IoMdSend />
-            </Button>
-          </div>
-        </form>
+        {id && (
+          <>
+            <div className="flex gap-4 h-[8vh]">
+              <Image
+                src={image1}
+                alt="image1"
+                width={50}
+                height={50}
+                className="rounded-full h-[50px]"
+              />
+              <div className="flex flex-col">
+                <h1>{name}</h1>
+                <p className="text-sm text-zinc-400">{`#${id.slice(-5)}`}</p>
+              </div>
+            </div>
+            <ScrollArea className="h-[41vh]">
+              <div className="flex flex-col pr-3 gap-2 ">
+                {parsedMessages?.map((listOfChats) => {
+                  return (
+                    <div
+                      // key={id}
+                      className={`flex ${
+                        listOfChats.user_id === localStorage.getItem("user_id")
+                          ? "justify-end"
+                          : "justify-start"
+                      } w-full`}
+                    >
+                      <p
+                        className={`flex p-2 rounded-md text-sm max-w-[70%] w-fit ${
+                          listOfChats.user_id ===
+                          localStorage.getItem("user_id")
+                            ? "bg-zinc-100 text-zinc-900"
+                            : "bg-zinc-800 text-zinc-100"
+                        }`}
+                      >
+                        {listOfChats.message}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+            <form onSubmit={handleMessageSend}>
+              <div className="flex gap-2 h-[6vh] items-end">
+                <Input
+                  type="text"
+                  placeholder="Type your message..."
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
+                />
+                <Button type="submit" variant="secondary">
+                  <IoMdSend />
+                </Button>
+              </div>
+            </form>
+          </>
+        )}
       </section>
     </section>
   );

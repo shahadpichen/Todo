@@ -23,6 +23,8 @@ interface ChatList {
   user_id: UUID;
   chat_id: UUID;
   user_name: string;
+  owner_id: UUID;
+  owner_name: string;
 }
 
 interface Props {
@@ -34,6 +36,8 @@ interface Props {
 function SearchAndList({ setName, setId, setChatId }: Props) {
   const [usersList, setUsersList] = useState<UsersList[]>([]);
   const [chatList, setChatList] = useState<ChatList[]>([]);
+  const [ownerList, setOwnerList] = useState<ChatList[]>([]);
+  const [updateFlag, setUpdateFlag] = useState(false);
 
   const [userId, setUserId] = useState<string>("");
   const [userExists, setUserExists] = useState<boolean>(false);
@@ -54,24 +58,19 @@ function SearchAndList({ setName, setId, setChatId }: Props) {
       });
 
     axios
-      .get(
-        `${serverURL}/chats/chatListUsers/${localStorage.getItem(
-          "user_id"
-        )}/${localStorage.getItem("user_name")}`,
-        {
-          headers: {
-            Authentication: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      )
+      .get(`${serverURL}/chats/chatListUsers`, {
+        headers: {
+          Authentication: `Bearer ${localStorage.getItem("token")}`,
+        },
+      })
       .then((response) => {
-        console.log(response);
-        setChatList(response.data);
+        setOwnerList(response.data.ownerChats);
+        setChatList(response.data.userChats);
       })
       .catch((error) => {
         console.log(error);
       });
-  }, []);
+  }, [updateFlag]);
 
   const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const id = event.target.value.slice(-5);
@@ -85,7 +84,7 @@ function SearchAndList({ setName, setId, setChatId }: Props) {
     if (selectedUser) {
       axios
         .post(
-          `${serverURL}/chats/addChatList/${localStorage.getItem("user_id")}`,
+          `${serverURL}/chats/addChatList/${localStorage.getItem("user_name")}`,
           { user_name: selectedUser.user_name, user_id: selectedUser.user_id },
           {
             headers: {
@@ -95,6 +94,7 @@ function SearchAndList({ setName, setId, setChatId }: Props) {
         )
         .then((response) => {
           console.log(response);
+          setUpdateFlag((prev) => !prev);
         })
         .catch((error) => {
           console.log(error);
@@ -170,6 +170,29 @@ function SearchAndList({ setName, setId, setChatId }: Props) {
                 <h1 className="text-sm">{user.user_name}</h1>
                 <p className="text-xs text-zinc-400">
                   #{user.user_id.slice(-5)}
+                </p>
+              </div>
+            </div>
+          ))}
+          {ownerList.map((user) => (
+            <div
+              key={user.user_id}
+              className="flex gap-2 items-center justify-center h-[6vh] max-w-[70%] w-fit cursor-pointer hover:bg-zinc-800 rounded-md py-7 px-2"
+              onClick={() =>
+                userSelected(user.owner_name, user.owner_id, user.chat_id)
+              }
+            >
+              <Image
+                src={image1}
+                alt="image1"
+                width={40}
+                height={40}
+                className="rounded-full h-[40px]"
+              />
+              <div className="flex flex-col">
+                <h1 className="text-sm">{user.owner_name}</h1>
+                <p className="text-xs text-zinc-400">
+                  #{user.owner_id.slice(-5)}
                 </p>
               </div>
             </div>

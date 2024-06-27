@@ -13,8 +13,8 @@ const router = express.Router();
 const verityToken = require("../middleware/verifyToken");
 
 router.get("/", verityToken, getUsers);
-router.post("/addChatList/:id", verityToken, addChatList);
-router.get("/chatListUsers/:id/:name", verityToken, chatListUsers);
+router.post("/addChatList/:name", verityToken, addChatList);
+router.get("/chatListUsers", verityToken, chatListUsers);
 
 router.get("/:id", verityToken, getChat);
 router.post("/", verityToken, addChat);
